@@ -5,19 +5,16 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var router = express.Router();
-
-var Schema = mongoose.Schema;
-
-
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Residency' });
+var register = require('./register');
+//app.use('/register', register)
+/* GET users listing. */
+router.get('/', function(req, res) {
+  res.render('register');
 });
 
-router.post('/', function(req,res,next){
-  res.redirect('/register');
-  //route us to the register page
+/*POST users listing. */
+router.post('/', function(req, res,next){
+  res.send('Yooooo');
 });
-
 
 module.exports = router;

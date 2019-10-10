@@ -8,14 +8,11 @@
     <h1><%= title %></h1>
     <p>Welcome to the <%= title %> Web App</p>
     <p>Please login to register for a room</p>
-    <form>
-      <input placeholder="Enter Student's ID">
-      <br>
-      <input placeholder="Enter Student's Name">
-      <br>
-      <input placeholder="Enter Student's Pin">
-      <br>
-      <button>SUBMIT</button>
-    </form>
+    <!--Allow data to be saved-->
+    <form id="login" action="/" method="POST">
+      Student ID: <input placeholder="Enter Student ID" type="text" name="stud_id" value=""><br>
+      Student Pin: <input placeholder="Enter Student Pin" type="text" name="stud_pin" value=""><br>
+      <input type="submit" value="Submit">
+      </form> 
   </body>
 </html>
