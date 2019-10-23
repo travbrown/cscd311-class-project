@@ -3,11 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var mongoose = require('mongoose');
+var db = require('../databaseConfig');
 var router = express.Router();
-
-var Schema = mongoose.Schema;
-
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -15,6 +12,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/', function(req,res,next){
+  console.log(req.body)
   res.redirect('/register');
   //route us to the register page
 });

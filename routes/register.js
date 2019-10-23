@@ -13,8 +13,9 @@ router.get('/', function(req, res) {
 });
 
 /*POST users listing. */
-router.post('/', function(req, res,next){
-  res.send('Yooooo');
+router.post('/', function(req, res){
+  
+  res.send(req.body);
 });
 
 module.exports = router;
