@@ -1,8 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
-import mongoose from 'mongoose';
 import models, { connectDb } from './src/models';
-import 'dotenv/config';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
@@ -10,9 +8,10 @@ import alert from 'alert-node';
 import createError from 'http-errors';
 import logger from 'morgan';
 import cookieParser from 'cookie-parser';
+import { model } from 'mongoose';
+import { isNull } from 'util';
 
 const app = express();
-var db = mongoose.connection;
 
 var currentUser = {
   id: undefined,
@@ -39,16 +38,16 @@ app.get('/', function(req, res, next) {
 });
 
 // POST saves login data in the submit form
-app.post('/', function(req,res,next){
+app.post('/', async (req,res,next) => {
   if(req.body.id == null || req.body.pin == null){
     // Send an alert message that something is empty
     alert('Please fill out all fields');
   }else{
+
     currentUser.id = req.body.id;
     currentUser.pin = req.body.pin;
     res.render('register.ejs');
   }
-  //sends us to this routing path established in app.js
 });
 
 // GET registration page
@@ -58,33 +57,77 @@ app.get('/register', function(req, res) {
 
 /*POST Room registration. */
 app.post('/register', async (req, res) => {
-  //console.log(req.body)
   if(req.body.name == '' || req.body.level == '' || req.body.gender == '' || req.body.room == ''){
-        alert('Not all fields filled in!');
+    alert('Not all fields filled in!');
   }else{
-      db.on('error', console.error.bind(console, 'connection error:'));
-      db.once('open', async function() {
-        console.log("Connection Successful!");
-        const student = await Student.create({
+    // Fetching the room and checking capacity    
+    models.Room.findOne({roomNum: req.body.room},'occupants').then((room) => {
+      if(!isNull(room)){
+        
+        if (room.occupants.length >= 4){
+          alert('This room is full. Please choose another!');
+          res.render('register');
+        }else{
+          // Adding student to room and saving their data
+          room.occupants.push(currentUser.id);
+          models.Student.findOneAndUpdate({
+            id: currentUser.id,
+            pin: currentUser.pin
+          },
+          {
+            name: req.body.name,
+            level: req.body.level,
+            gender: req.body.gender,
+          },
+          {
+            upsert: true,
+            new: true,
+          }).then(student => student.save()).catch(
+            err => console.log('failed to create new student for existing room' + err)
+            );
+          
+        }
+      }else{
+        // Creating room w/ student & saving student data
+        models.Room.findOneAndUpdate({},{
+          roomNum: req.body.room,
+          occupants: [currentUser.id],
+        },{
+          new: true,
+          upsert: true,
+        }).then(
+          room => room.save()
+          ).catch(
+            err => console.log('failed to create new room' + err)
+            );
+
+        models.Student.findOneAndUpdate({
           id: currentUser.id,
-          pin: currentUser.pin,
+          pin: currentUser.pin
+        },
+        {
           name: req.body.name,
           level: req.body.level,
-          gender: req.body.gender
-        }).then(student =>{
-          student.save().then(item => {
-            res.send("Saved to database");
-            res.render('showdb.ejs');
-          }).catch(err => {
-            res.status(400).send("Unable to save to database", err);
-          });
-        }).catch(err);
-      }).catch(err => {
-        res.send("Failed to Connect :(");
-      });
-    }
+          gender: req.body.gender,
+        },
+        {
+          upsert: true,
+          new: true,
+        }).then(student => student.save()).catch(
+          err => console.log('failed to create new student' + err)
+          );
+      }
+    console.log(room.occupants);
+    
+    }).catch(err => console.log('failed outside of room/stud promises' + err));
+    res.render('showdb');
+  }
 });
 
+app.get('/showdb', async (req, res) => {
+  // Get & render entire rooms collection
+  res.render('showdb.ejs');
+});
 
 
 
@@ -123,22 +166,29 @@ const eraseDatabaseOnSync = true;
       console.log(`App listening on port ${process.env.PORT}!`),
     );
   }).catch(dbErr => {
-  console.log("DB Connection Error: ", dbErr.message);
+  res.send("DB Connection Error: ", dbErr.message);
   process.exit(1);
 });
 
+//const bookingProcess = async (val) => {};
+
 const createRoomsWithStudents = async () => {
+
+
   const room1 = new models.Room({
     roomNum: 34,
     occupants: [],
   });
 
   const student1 = new models.Student({
-    text: 'Published the Road to learn React',
-    room: room1.id,
+    id: '10784295',
+    pin: '73524',
+    name: 'Abena',
+    level: '100',
+    gender: 'F',
   });
-  await student1.save();
 
+  await student1.save();
   await room1.save();
 };
 

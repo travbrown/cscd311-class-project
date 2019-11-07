@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 const roomSchema = new mongoose.Schema({
-    roomNum: Number,
-    occupants: [String],
+    roomNum: String,
+    occupants: [],
   });
 
   roomSchema.pre('remove', function(next) {
