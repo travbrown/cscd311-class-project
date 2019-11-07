@@ -4,7 +4,7 @@
 
 ### Instructions
 
-- navigate to the root of this folder and run npm start in the console to start web application
+- navigate to the root of this folder and run `npm start` in the console to start web application
 - on any browser, go to <http://localhost:3000>
 
 
@@ -19,3 +19,5 @@
 
 - change Start script to `nodemon --exec babel-node ./app.js`
   - ensures we all on the same JS version
+
+- You have to use the .then() to handle the result from the promise sent out. Doesn't seem like you can change global variables from inside the scope of the promise. Seems like you'd have to use the Async/Await combo for that since Await makes all the following code halt until command completed.
